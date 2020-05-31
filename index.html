@@ -1,0 +1,445 @@
+<html>
+    <head>
+        <title>Musician Genre Classification</title>
+        <meta charset="UTF-8">
+        <style>
+            body {
+                font-family: Verdana, Geneva, Tahoma, sans-serif;
+                color: white;
+                background-color: black;
+            }
+
+            .header {
+                display: flex;
+            }
+
+            .leftArrow {
+                flex: .1;
+                width: 10%;
+                text-align: right;
+                padding-top: 30%;
+                vertical-align: auto;
+            }
+
+            .rigthArrow {
+                flex: .1;
+                width: 10%;
+                padding-top: 30%;
+                vertical-align: auto;
+            }
+
+            .mainContent {
+                flex: .8;
+                width: 80%;
+                text-align: center;
+            }
+
+            .name {
+                margin-top: 10px;
+                font-size: xx-large;
+            }
+
+            .tags {
+                text-align: center;
+                margin: auto;
+                margin-bottom: 20px;
+                max-width: 70%;
+            }
+
+            .tag {
+                margin: 10px;
+                margin-bottom: 20px;
+            }
+
+            .removedTag {
+                margin-bottom: 20px;
+            }
+
+            .removertag {
+                color: red;
+            }
+
+            .inputs {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .removeds {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .exports {
+                text-align: center;
+            }
+
+            .textarea {
+                width: 100%;
+            }
+            .reset {
+                text-align: center;
+                color: red;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <!-- Header -->
+            <div class="header">
+                <div class="leftArrow"> <span onclick="previous()"> < </span> </div>
+                
+                <div class="mainContent">
+                    <!--
+                        <div id="photos" class="photos">
+                            <img width="100px" height="100px" src="https://lastfm.freetls.fastly.net/i/u/300x300/b41fa48c0c6eb64bb009c1e42209c1d5.png" /> 
+                            <img width="100px" height="100px" src="https://lastfm.freetls.fastly.net/i/u/300x300/2b0f13e8f873922f1a4977699948a786.jpg" />
+                        </div> <br/>
+                        
+                    -->
+                    <div class="name"> <a id="aName" href="https://www.last.fm/pt/music/Ariana+Grande" target="_blank">Ariana Grande</a> </div>  <br/>
+                    <div id="tags" class="tags">pop rnb female vocalists ariana grande love at first listen</div>
+                </div>
+                
+                <div class="rigthArrow"> <span onclick="next()"> > </span> </div>
+                
+            </div>
+
+            <!-- Input -->
+            <div class="inputs">
+                Genre <input id="newTag" name="newTag" type="text" onkeypress="keyPressed(event)" /> <button onclick="addTag()">Add</button>
+                <span id="tips" class="tips"></span>
+            </div>
+
+            <!-- Removeds -->
+            <div class="removeds">
+                Removed <br/>
+                <span id="removeds"></span>
+            </div>
+
+            <!-- Removeds -->
+            <div class="removeds">
+                Modified ( <span onclick="modifyTag()" style="color: orange">Add</span> )<br/>
+                <span id="modifieds"></span>
+            </div>
+
+            <!-- Excludeds -->
+            <div class="removeds">
+                Excluded <br/>
+                <span id="excludeds"></span>
+            </div> 
+
+            <hr />
+
+            <!-- Textarea-->
+            <div class="exports">
+                <span onclick="exportUpdates()">Export Data</span> <br/>
+                <textarea id="textArea" class="textarea" rows="5" cols="10"></textarea> <br/>
+                <br/>
+            </div>
+
+            <br/> <br/> <br/>
+            <hr/>
+            <div class="reset"><span onclick="reset()">Reset!</span></div>
+        </div>
+
+        
+    </body>
+    <script src="artists.js"></script>
+    <script>
+        let index = 0;
+        let l_artist = [];
+        let updates = {};
+
+        //localStorage.setItem('artist_list', ''); // reset
+        let l_artistS = localStorage.getItem('artist_list');
+
+        //localStorage.setItem('updates', '');  // reset
+        let updatesS = localStorage.getItem('updates');
+
+        console.log(JSON.stringify(updatesS));
+
+        if (!l_artistS) {
+            l_artist = artist_list;
+            localStorage.setItem('artist_list', JSON.stringify(l_artist));
+        } else {
+            l_artist = JSON.parse(l_artistS);
+        }
+
+
+        if (!updatesS) {
+            updates = {
+                artists: {
+                    //removedTags: [],
+                    //addedTags: [],
+                },
+                tags: {
+                    excludeds: [],
+                    modifieds: {
+
+                    },
+                }
+            };
+            localStorage.setItem('updates', JSON.stringify(updates));
+        } else {
+            updates = JSON.parse(updatesS);
+        }
+
+        console.log(JSON.stringify(updatesS));
+        console.log(updates);
+
+
+        alert(l_artist.length);
+
+        function next() {
+            index = index+1 == l_artist.length ? index : index+1;
+
+            document.getElementById('newTag').value = "";
+            let removedSpan = document.getElementById("removeds");
+            removedSpan.innerHTML = "";
+
+            if ( index+1 == l_artist.length )
+                alert("End of the list");
+
+            showArtist();
+        }
+
+        function previous() {
+            index = index == 0 ? index : index-1;
+
+            document.getElementById('newTag').value = "";
+            let removedSpan = document.getElementById("removeds");
+            removedSpan.innerHTML = "";
+            
+
+            if ( index == 0 )
+                alert("Begining of the list");
+
+            showArtist();
+        }
+
+        function showArtist() {
+            let artist = l_artist[index];
+
+            document.getElementById('newTag').value = "";
+
+            let linkTag = document.getElementById("aName");
+            linkTag.innerHTML = artist.name;
+            linkTag.href = "https://www.last.fm/pt/music/" + artist.name.replace(" ", "+");
+
+            let setTags = new Set();
+            let tagsDiv = document.getElementById("tags");
+            tagsDiv.innerHTML = "";
+            artist.tags = artist.tags ? artist.tags : [];
+            for (let t of artist.tags) {
+                if (!updates.tags.excludeds.includes(t))
+                    setTags.add( updates.tags.modifieds[t] ? updates.tags.modifieds[t] : t );
+                    //addTag(t, false);
+            }
+
+            if (updates.artists[ l_artist[index].name ]) {
+                for (let t of updates.artists[ l_artist[index].name ].addedTags) {
+                    setTags.add( updates.tags.modifieds[t] ? updates.tags.modifieds[t] : t );
+                    //addTag(t, false);
+                }
+            }
+
+            for (let t of setTags) 
+                addTag(t, false);        
+
+            tagsDiv = document.getElementById("removeds");
+            tagsDiv.innerHTML = "";
+            if (updates.artists[ l_artist[index].name ]) {
+                for (let t of updates.artists[ l_artist[index].name ].removedTags) {
+                    removeTag(t, false);
+                }
+            }
+
+        }
+
+        function addTag(tag, updateModel = true) {
+            if (!tag) {
+                tag = document.getElementById('newTag').value;
+                document.getElementById('newTag').value = "";
+            }
+
+            let tagRemovedList = document.getElementById(`excluded-${tag}`);
+            if (tagRemovedList) {
+                document.getElementById("removeds").removeChild(tagRemovedList);
+            }
+
+            if ( updateModel && l_artist[index].tags.includes(tag) )
+                return;
+
+            let tagsDiv = document.getElementById("tags");
+            tagsDiv.innerHTML += `<span class="tag" id="addedTag-${tag}">${tag} <span class="removertag" onclick="removeTag('${tag}')">x</span><span> <br/>`;
+             
+            if (!updateModel)
+                return;
+
+            if (!updates.artists[ l_artist[index].name ]) {
+                updates.artists[ l_artist[index].name ] = {
+                    removedTags: [],
+                    addedTags: [],    
+                }
+            }
+
+            updates.artists[ l_artist[index].name ].removedTags = updates.artists[ l_artist[index].name ].removedTags.filter( t => t != tag );
+            if ( !l_artist[index].tags.includes(tag) )
+                updates.artists[ l_artist[index].name ].addedTags.push( tag );
+        }
+
+        function removeTag(tag, updateModel = true) {
+            let removedSpan = document.getElementById("removeds");
+            removedSpan.innerHTML += `<br/> <span id="excluded-${tag}" class="removedTag">${tag} <span onclick="excludeTag('${tag}')" style="color: red">exclude</span> - <span onclick="addTag('${tag}')" style="color: green">add back</span></span>`;
+                        
+            let addedListTag = document.getElementById(`addedTag-${tag}`);
+            if (addedListTag) {
+                document.getElementById("tags").removeChild(addedListTag);
+            }
+            
+            if (!updateModel)
+                return;
+            
+
+            if (!updates.artists[ l_artist[index].name ]) {
+                updates.artists[ l_artist[index].name ] = {
+                    removedTags: [],
+                    addedTags: [],    
+                }
+            }
+
+            updates.artists[ l_artist[index].name ].addedTags = updates.artists[ l_artist[index].name ].addedTags.filter( t => t != tag );
+            updates.artists[ l_artist[index].name ].removedTags.push( tag );
+
+            l_artist[index].tags = l_artist[index].tags.filter(t => t != tag);
+        }
+
+        function modifyTag(tag, newValue) {
+            updateModel = newValue ? false : true;
+
+            if (!tag) {
+                tag = prompt("Please enter the value you want to change", '');
+                modifyTag(tag);
+                return;
+            }
+
+            if (!newValue)
+                newValue = prompt("Please enter the new value for "+ tag, tag);
+
+            if (newValue == null || newValue == '' || newValue == tag) {
+                return;
+            } 
+
+            modifiedDiv = document.getElementById('modifieds');
+            modifiedDiv.innerHTML += `<br/> <span id="modified-${tag}" class="removedTag">${tag} -> ${newValue} <span onclick="unmodifyTag('${tag}')" style="color: yellow">cancel</span>`;
+
+            let tagRemovedList = document.getElementById(`excluded-${tag}`);
+            if (tagRemovedList) {
+                document.getElementById("removeds").removeChild(tagRemovedList);
+            }
+            
+            if (updateModel) {
+                updates.tags.modifieds[ tag ] = newValue;
+
+                if (!updates.artists[ l_artist[index].name ]) {
+                    updates.artists[ l_artist[index].name ] = {
+                        removedTags: [],
+                        addedTags: [],    
+                    }
+                }
+                showArtist();
+            }
+        }
+
+        function excludeTag(tag, updateModel = true) {
+            if (updateModel) {
+                updates.tags.excludeds.push(tag);
+                
+                let tagRemovedList = document.getElementById(`excluded-${tag}`);
+                if (tagRemovedList) {
+                    document.getElementById("removeds").removeChild(tagRemovedList);
+                }
+
+                updates.artists[ l_artist[index].name ].removedTags = updates.artists[ l_artist[index].name ].removedTags.filter( t => t != tag );                
+            }
+
+            document.getElementById("excludeds").innerHTML += `<br/> <span id="excluded-${tag}" class="removedTag">${tag} <span onclick="unexcludeTag('${tag}')" style="color: purple">unexclude</span> </span>`;
+        }
+
+        function unexcludeTag(tag) {
+            updates.tags.excludeds = updates.tags.excludeds.filter(t => t != tag);
+
+            let tagRemovedList = document.getElementById(`excluded-${tag}`);
+            if (tagRemovedList) {
+                document.getElementById("excludeds").removeChild(tagRemovedList);
+            }
+            
+            removeTag(tag, false);
+        }
+
+        function unmodifyTag(tag) {
+            delete updates.tags.modifieds[ tag ];
+
+            let tagRemovedList = document.getElementById(`modified-${tag}`);
+            if (tagRemovedList) {
+                document.getElementById("modifieds").removeChild(tagRemovedList);
+            }
+        }
+
+        function exportUpdates(openTab = true) {
+            const el = document.getElementById('textArea');
+            let content = {
+                date: new Date(),
+                updates: updates
+            };
+            el.value = JSON.stringify(content);
+            el.setAttribute('readonly', '');
+            //el.style.position = 'absolute';
+            //el.style.left = '-9999px';
+            //document.body.removeChild(el);
+            
+            if (openTab) {
+                el.select();
+                document.execCommand('copy');
+                alert("Content was copied");
+                var win = window.open('http://dontpad.com/rkaustchr/lastfm', '_blank');
+                win.focus();
+            }
+        }
+
+        function keyPressed(event) {
+            if (event.keyCode == 13) {
+                addTag();
+            }
+        }
+
+        function reset() {
+            let resp = confirm("Are you sure you want to reset everything?");
+
+            if (resp) {
+                localStorage.setItem('artist_list', ''); // reset
+                localStorage.setItem('updates', '');  // reset
+
+                location.reload();
+            }
+
+        }
+
+        for (m in  updates.tags.modifieds) {
+            modifyTag(m, updates.tags.modifieds[m]);
+        }
+        
+        for (et of updates.tags.excludeds) {
+            excludeTag(et, false);
+        }
+
+        showArtist();
+
+        setInterval(function() {
+            console.log(updates);
+            localStorage.setItem('updates', JSON.stringify(updates));
+            exportUpdates(false);
+        }, 30000);
+
+    </script>
+</html>

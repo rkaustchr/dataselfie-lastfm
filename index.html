@@ -152,24 +152,12 @@
     <script src="artists.js"></script>
     <script>
         let index = 0;
-        let l_artist = [];
         let updates = {};
-
-        //localStorage.setItem('artist_list', ''); // reset
-        let l_artistS = localStorage.getItem('artist_list');
 
         //localStorage.setItem('updates', '');  // reset
         let updatesS = localStorage.getItem('updates');
 
         console.log(JSON.stringify(updatesS));
-
-        if (!l_artistS) {
-            l_artist = artist_list;
-            localStorage.setItem('artist_list', JSON.stringify(l_artist));
-        } else {
-            l_artist = JSON.parse(l_artistS);
-        }
-
 
         if (!updatesS) {
             updates = {
@@ -192,16 +180,16 @@
         console.log(JSON.stringify(updatesS));
         console.log(updates);
 
-        document.getElementById('totalArtists').innerHTML = l_artist.length;
+        document.getElementById('totalArtists').innerHTML = artist_list.length;
 
         function next() {
-            index = index+1 == l_artist.length ? index : index+1;
+            index = index+1 == artist_list.length ? index : index+1;
 
             document.getElementById('newTag').value = "";
             let removedSpan = document.getElementById("removeds");
             removedSpan.innerHTML = "";
 
-            if ( index+1 == l_artist.length )
+            if ( index+1 == artist_list.length )
                 alert("End of the list");
 
             showArtist();
@@ -222,7 +210,7 @@
         }
 
         function showArtist() {
-            let artist = l_artist[index];
+            let artist = artist_list[index];
             document.getElementById("actualIndex").value = index;
 
             document.getElementById('newTag').value = "";
@@ -241,8 +229,8 @@
                     //addTag(t, false);
             }
 
-            if (updates.artists[ l_artist[index].name ]) {
-                for (let t of updates.artists[ l_artist[index].name ].addedTags) {
+            if (updates.artists[ artist_list[index].name ]) {
+                for (let t of updates.artists[ artist_list[index].name ].addedTags) {
                     setTags.add( updates.tags.modifieds[t] ? updates.tags.modifieds[t] : t );
                     //addTag(t, false);
                 }
@@ -253,8 +241,8 @@
 
             tagsDiv = document.getElementById("removeds");
             tagsDiv.innerHTML = "";
-            if (updates.artists[ l_artist[index].name ]) {
-                for (let t of updates.artists[ l_artist[index].name ].removedTags) {
+            if (updates.artists[ artist_list[index].name ]) {
+                for (let t of updates.artists[ artist_list[index].name ].removedTags) {
                     removeTag(t, false);
                 }
             }
@@ -272,7 +260,7 @@
                 document.getElementById("removeds").removeChild(tagRemovedList);
             }
 
-            if ( updateModel && l_artist[index].tags.includes(tag) )
+            if ( updateModel && artist_list[index].tags.includes(tag) )
                 return;
 
             let tagsDiv = document.getElementById("tags");
@@ -281,16 +269,16 @@
             if (!updateModel)
                 return;
 
-            if (!updates.artists[ l_artist[index].name ]) {
-                updates.artists[ l_artist[index].name ] = {
+            if (!updates.artists[ artist_list[index].name ]) {
+                updates.artists[ artist_list[index].name ] = {
                     removedTags: [],
                     addedTags: [],    
                 }
             }
 
-            updates.artists[ l_artist[index].name ].removedTags = updates.artists[ l_artist[index].name ].removedTags.filter( t => t != tag );
-            if ( !l_artist[index].tags.includes(tag) )
-                updates.artists[ l_artist[index].name ].addedTags.push( tag );
+            updates.artists[ artist_list[index].name ].removedTags = updates.artists[ artist_list[index].name ].removedTags.filter( t => t != tag );
+            if ( !artist_list[index].tags.includes(tag) )
+                updates.artists[ artist_list[index].name ].addedTags.push( tag );
         }
 
         function removeTag(tag, updateModel = true) {
@@ -306,17 +294,17 @@
                 return;
             
 
-            if (!updates.artists[ l_artist[index].name ]) {
-                updates.artists[ l_artist[index].name ] = {
+            if (!updates.artists[ artist_list[index].name ]) {
+                updates.artists[ artist_list[index].name ] = {
                     removedTags: [],
                     addedTags: [],    
                 }
             }
 
-            updates.artists[ l_artist[index].name ].addedTags = updates.artists[ l_artist[index].name ].addedTags.filter( t => t != tag );
-            updates.artists[ l_artist[index].name ].removedTags.push( tag );
+            updates.artists[ artist_list[index].name ].addedTags = updates.artists[ artist_list[index].name ].addedTags.filter( t => t != tag );
+            updates.artists[ artist_list[index].name ].removedTags.push( tag );
 
-            l_artist[index].tags = l_artist[index].tags.filter(t => t != tag);
+            artist_list[index].tags = artist_list[index].tags.filter(t => t != tag);
         }
 
         function modifyTag(tag, newValue) {
@@ -346,8 +334,8 @@
             if (updateModel) {
                 updates.tags.modifieds[ tag ] = newValue;
 
-                if (!updates.artists[ l_artist[index].name ]) {
-                    updates.artists[ l_artist[index].name ] = {
+                if (!updates.artists[ artist_list[index].name ]) {
+                    updates.artists[ artist_list[index].name ] = {
                         removedTags: [],
                         addedTags: [],    
                     }
@@ -365,7 +353,7 @@
                     document.getElementById("removeds").removeChild(tagRemovedList);
                 }
 
-                updates.artists[ l_artist[index].name ].removedTags = updates.artists[ l_artist[index].name ].removedTags.filter( t => t != tag );                
+                updates.artists[ artist_list[index].name ].removedTags = updates.artists[ artist_list[index].name ].removedTags.filter( t => t != tag );                
             }
 
             document.getElementById("excludeds").innerHTML += `<br/> <span id="excluded-${tag}" class="removedTag">${tag} <span onclick="unexcludeTag('${tag}')" style="color: purple">unexclude</span> </span>`;
@@ -415,7 +403,7 @@
         function updateIndex() {
             let newIndex = parseInt(document.getElementById("actualIndex").value);
 
-            if (newIndex && newIndex < l_artist.length) {
+            if (newIndex && newIndex < artist_list.length) {
                 index = newIndex;
                 showArtist();
             }
@@ -431,7 +419,6 @@
             let resp = confirm("Are you sure you want to reset everything?");
 
             if (resp) {
-                localStorage.setItem('artist_list', ''); // reset
                 localStorage.setItem('updates', '');  // reset
 
                 location.reload();
@@ -450,7 +437,7 @@
         showArtist();
 
         setInterval(function() {
-            //console.log(updates);
+            console.log(updates);
             localStorage.setItem('updates', JSON.stringify(updates));
             exportUpdates(false);
         }, 30000);

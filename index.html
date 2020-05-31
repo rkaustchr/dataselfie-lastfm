@@ -9,28 +9,30 @@
                 background-color: black;
             }
 
+            .body {
+                width: 300px;
+                margin: auto;
+            }
+
             .header {
                 display: flex;
             }
 
             .leftArrow {
                 flex: .1;
-                width: 10%;
                 text-align: right;
-                padding-top: 30%;
-                vertical-align: auto;
+                padding-top: 5%;
+                /*vertical-align: auto;*/
             }
 
             .rigthArrow {
                 flex: .1;
-                width: 10%;
-                padding-top: 30%;
-                vertical-align: auto;
+                padding-top: 5%;
+                /*vertical-align: auto;*/
             }
 
             .mainContent {
-                flex: .8;
-                width: 80%;
+                width: 250px;
                 text-align: center;
             }
 
@@ -71,10 +73,12 @@
 
             .exports {
                 text-align: center;
+                width: 200px;
+                margin: auto;
             }
 
             .textarea {
-                width: 200px;
+                width: 100%;
             }
             .reset {
                 text-align: center;
@@ -83,12 +87,13 @@
         </style>
     </head>
     <body>
-        <div>
+        <div class="body">
             <!-- Header -->
             <div class="header">
                 <div class="leftArrow"> <span onclick="previous()"> < </span> </div>
                 
                 <div class="mainContent">
+                    <input id="actualIndex" type="text" size="3px" onblur="updateIndex()" /> / <span id="totalArtists"></span>
                     <!--
                         <div id="photos" class="photos">
                             <img width="100px" height="100px" src="https://lastfm.freetls.fastly.net/i/u/300x300/b41fa48c0c6eb64bb009c1e42209c1d5.png" /> 
@@ -187,8 +192,7 @@
         console.log(JSON.stringify(updatesS));
         console.log(updates);
 
-
-        alert(l_artist.length);
+        document.getElementById('totalArtists').innerHTML = l_artist.length;
 
         function next() {
             index = index+1 == l_artist.length ? index : index+1;
@@ -219,6 +223,7 @@
 
         function showArtist() {
             let artist = l_artist[index];
+            document.getElementById("actualIndex").value = index;
 
             document.getElementById('newTag').value = "";
 
@@ -407,6 +412,15 @@
             }
         }
 
+        function updateIndex() {
+            let newIndex = parseInt(document.getElementById("actualIndex").value);
+
+            if (newIndex && newIndex < l_artist.length) {
+                index = newIndex;
+                showArtist();
+            }
+        }
+
         function keyPressed(event) {
             if (event.keyCode == 13) {
                 addTag();
@@ -436,7 +450,7 @@
         showArtist();
 
         setInterval(function() {
-            console.log(updates);
+            //console.log(updates);
             localStorage.setItem('updates', JSON.stringify(updates));
             exportUpdates(false);
         }, 30000);
